@@ -19,7 +19,7 @@ def train_model(data_yaml):
     model = YOLO('yolov8s-seg.pt')  # 세그멘테이션용 모델 로드
     
     # 모델 학습
-    model.train(data=data_yaml, epochs=300, imgsz=640, plots=True)
+    model.train(data=data_yaml, epochs=200, imgsz=640, plots=True)
 
 def main():
     # Roboflow에서 데이터셋 다운로드 및 경로 가져오기

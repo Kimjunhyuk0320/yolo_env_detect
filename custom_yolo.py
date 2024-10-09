@@ -19,7 +19,7 @@ plt.rc('font', family=fontprop.get_name())
 plt.rcParams['axes.unicode_minus'] = False  # 마이너스 폰트 깨짐 방지
 
 # YOLOv8 세그멘테이션 모델 불러오기
-model = YOLO('runs/segment/train6/weights/best.pt')  # 훈련된 모델 경로로 수정
+model = YOLO('runs/segment/train/weights/best.pt')  # 훈련된 모델 경로로 수정
 
 def detect_objects(image_path):
     # 이미지를 불러오기
