@@ -64,7 +64,6 @@ python custom_yolo.py
 ├── result/                  # 결과 이미지가 저장되는 폴더
 ├── train_yolo_seg.py        # YOLOv8 훈련 스크립트
 ├── custom_yolo.py           # YOLOv8 탐지 및 시각화 스크립트
-├── requirements.txt         # 설치할 외부 라이브러리 목록
 └── README.md                # 프로젝트 설명 파일
 ```
 
