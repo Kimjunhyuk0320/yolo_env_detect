@@ -1,0 +1,18 @@
+names:
+- asphalt
+- cement
+- grass
+- red-sand
+- rocks
+- stone
+- white-sand
+nc: 7
+roboflow:
+  license: CC BY 4.0
+  project: yolo_env_detection_ver3
+  url: https://universe.roboflow.com/yoloproject-rnxqb/yolo_env_detection_ver3/dataset/1
+  version: 1
+  workspace: yoloproject-rnxqb
+test: /home/junhyuk/inha/yolo_env_detect/test/images
+train: /home/junhyuk/inha/yolo_env_detect/yolo_env_detection_ver3-1/train/images
+val: /home/junhyuk/inha/yolo_env_detect/yolo_env_detection_ver3-1/valid/images

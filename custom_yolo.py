@@ -19,9 +19,9 @@ plt.rc('font', family=fontprop.get_name())
 plt.rcParams['axes.unicode_minus'] = False  # 마이너스 폰트 깨짐 방지
 
 # YOLOv8 세그멘테이션 모델 불러오기
-model = YOLO('runs/segment/train/weights/best.pt')  # 훈련된 모델 경로로 수정
+model = YOLO('runs/segment/train2/weights/best.pt')  # 훈련된 모델 경로로 수정
 
-def detect_objects(image_path):
+def detect_objects(image_path, conf_threshold=0.35):
     # 이미지를 불러오기
     img = cv2.imread(image_path)
 
@@ -29,7 +29,13 @@ def detect_objects(image_path):
     results = model(img)
 
     # 결과 시각화 (탐지된 객체 이미지 얻기)
-    result_img = results[0].plot()
+    result_img = img.copy()  # 원본 이미지를 복사하여 사용
+
+    # 탐지된 객체 중 신뢰도가 conf_threshold 이상인 경우만 필터링
+    for box in results[0].boxes:
+        if box.conf > conf_threshold:
+            # 신뢰도가 높은 객체에 대해 결과를 그리기
+            result_img = results[0].plot()
 
     return result_img  # 예측 결과 이미지 반환
 
