@@ -7,19 +7,9 @@ import numpy as np
 from datetime import datetime
 import matplotlib.font_manager as fm
 
-# 폰트 경로 설정 (Linux의 경우 'NanumGothic' 폰트 설치가 필요)
-font_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'  # 폰트 경로 설정 (Linux에서 사용)
-# font_path = 'C:/Windows/Fonts/malgun.ttf'  # Windows용 폰트 경로
-# font_path = '/System/Library/Fonts/Supplemental/AppleGothic.ttf'  # macOS용 폰트 경로
-
-# 폰트를 로드하여 matplotlib에 설정
-fontprop = fm.FontProperties(fname=font_path, size=12)
-plt.rc('font', family=fontprop.get_name())
-
-plt.rcParams['axes.unicode_minus'] = False  # 마이너스 폰트 깨짐 방지
 
 # YOLOv8 세그멘테이션 모델 불러오기
-model = YOLO('runs/segment/train2/weights/best.pt')  # 훈련된 모델 경로로 수정
+model = YOLO('runs/segment/train/weights/best.pt')  # 훈련된 모델 경로로 수정
 
 def detect_objects(image_path, conf_threshold=0.35):
     # 이미지를 불러오기
