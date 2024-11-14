@@ -9,7 +9,7 @@ import matplotlib.font_manager as fm
 
 
 # YOLOv8 세그멘테이션 모델 불러오기
-model = YOLO('runs/segment/train/weights/best.pt')  # 훈련된 모델 경로로 수정
+model = YOLO('runs/segment/train2/weights/best.pt')  # 훈련된 모델 경로로 수정
 
 def detect_objects(image_path, conf_threshold=0.35):
     # 이미지를 불러오기

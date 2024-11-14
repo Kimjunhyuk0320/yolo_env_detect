@@ -6,7 +6,7 @@ def download_dataset():
     # Roboflow API 키 설정 및 데이터셋 다운로드
     rf = Roboflow(api_key="DfJJy1YtAtAu4nlKAbvs")  # Roboflow API 키 입력
     project = rf.workspace("yoloproject-rnxqb").project("yolo_env_detection_ver3")  # 프로젝트 이름 입력
-    dataset = project.version(3).download("yolov8")  # YOLOv8 형식으로 데이터셋 다운로드
+    dataset = project.version(4).download("yolov8")  # YOLOv8 형식으로 데이터셋 다운로드
     
     # 경로 출력해서 확인하기
     print(f"Dataset downloaded at: {dataset.location}")

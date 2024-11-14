@@ -1,7 +1,7 @@
 task: segment
 mode: train
 model: yolov8s-seg.pt
-data: /home/junhyuk/inha/yolo_env_detect/yolo_env_detection_ver3-3/data.yaml
+data: /home/junhyuk/inha/yolo_env_detect/yolo_env_detection_ver3-4/data.yaml
 epochs: 100
 time: null
 patience: 100
