@@ -3,3 +3,7 @@
 
 241118 기록 시작
 
+---
+241119 준혁 
+model_test.py 실행시
+pip install scikit-learn
