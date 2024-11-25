@@ -3,57 +3,66 @@ import cv2
 import numpy as np
 
 def main():
-    # Create a Camera object
+    # ZED 카메라 초기화
     zed = sl.Camera()
 
-    # Configure initial parameters
+    # 초기 설정
     init_params = sl.InitParameters()
-    init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE  # Depth mode
-    init_params.coordinate_units = sl.UNIT.METER  # Units in meters
+    init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE  # Depth 모드
+    init_params.coordinate_units = sl.UNIT.METER  # 단위: 미터
+    init_params.camera_resolution = sl.RESOLUTION.HD720  # 해상도 설정
 
-    # Open the camera
+    # 카메라 열기
     if zed.open(init_params) != sl.ERROR_CODE.SUCCESS:
         print("Failed to open ZED camera!")
         return
 
-    # Create runtime parameters
+    # 런타임 매개변수 생성
     runtime_params = sl.RuntimeParameters()
 
-    # Create Mat objects to store images
+    # 이미지와 Depth 데이터를 저장할 객체 생성
+    image = sl.Mat()
     depth_image = sl.Mat()
-    depth_colormap = None
 
     print("Press 'q' to quit.")
 
     while True:
+        # 카메라 데이터 가져오기
         if zed.grab(runtime_params) == sl.ERROR_CODE.SUCCESS:
-            # Retrieve depth data
-            zed.retrieve_measure(depth_image, sl.MEASURE.DEPTH)
+            # RGB 이미지 가져오기
+            zed.retrieve_image(image, sl.VIEW.LEFT)
+            rgb_frame = image.get_data()
 
-            # Convert depth data to OpenCV-compatible format
+            # Depth 데이터 가져오기
+            zed.retrieve_measure(depth_image, sl.MEASURE.DEPTH)
             depth_np = depth_image.get_data()
 
-            # Normalize for visualization
-            depth_colormap = cv2.normalize(depth_np, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
-            depth_colormap = cv2.applyColorMap(depth_colormap, cv2.COLORMAP_JET)
+            # 화면에 표시할 텍스트 추가
+            h, w, _ = rgb_frame.shape
 
-            # Add depth values as text on the image (center pixel as an example)
-            h, w = depth_np.shape
-            center_x, center_y = w // 2, h // 2
-            depth_value = depth_np[center_y, center_x]  # Depth at center pixel
-            text = f"Depth: {depth_value:.2f}m"
+            # 여러 위치의 Depth 값을 화면에 표시 (격자 형태로 예제)
+            grid_size = 5  # 표시할 Depth 값의 개수
+            step_x, step_y = w // grid_size, h // grid_size
+            for i in range(grid_size):
+                for j in range(grid_size):
+                    x, y = step_x * i + step_x // 2, step_y * j + step_y // 2  # 그리드 중심 좌표
+                    depth_value = depth_np[y, x]
 
-            # Overlay text on the colormap image
-            cv2.putText(depth_colormap, text, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                    if np.isfinite(depth_value):  # 유효한 Depth 값만 표시
+                        text = f"{depth_value:.2f}m"
+                        cv2.putText(rgb_frame, text, (x - 30, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
-            # Show the depth map with the depth value
-            cv2.imshow("Depth Map", depth_colormap)
+                    # 그리드 중심을 작은 원으로 표시
+                    cv2.circle(rgb_frame, (x, y), 3, (0, 255, 0), -1)
 
-            # Quit if 'q' is pressed
+            # OpenCV 창에 RGB 영상 표시
+            cv2.imshow("RGB + Depth Overlay", rgb_frame)
+
+            # 'q'를 누르면 종료
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-    # Close the camera
+    # 카메라 닫기 및 리소스 정리
     zed.close()
     cv2.destroyAllWindows()
 
