@@ -62,6 +62,7 @@ def main():
                     # 경계 상자 정보 가져오기
                     x1, y1, x2, y2 = map(int, box.xyxy[0])  # 좌표 변환
                     label = f"{box.cls}: {box.conf:.2f}"
+                    object_class = box.cls  # 탐지된 객체 클래스 (예: stone, sand 등)
 
                     # 객체의 중심 좌표 계산
                     center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
@@ -77,21 +78,31 @@ def main():
                     if depth_values:
                         average_depth = sum(depth_values) / len(depth_values)
                         depth_text = f"Depth: {average_depth:.2f}m"
+                    else:
+                        depth_text = "Depth: Invalid"
 
+                    # 특정 클래스에 따른 처리
+                    if object_class == 'stone':
                         # Papus 정리를 사용한 실제 크기 계산
                         pixel_width = x2 - x1
                         pixel_height = y2 - y1
-                        real_width, real_height = calculate_real_size(pixel_width, pixel_height, average_depth, fx, fy)
-                        real_size_text = f"Size: {real_width:.2f}m x {real_height:.2f}m"
-                    else:
-                        depth_text = "Depth: Invalid"
-                        real_size_text = "Size: N/A"
+                        if depth_values:  # 평균 Depth가 유효할 경우
+                            real_width, real_height = calculate_real_size(pixel_width, pixel_height, average_depth, fx, fy)
+                            real_size_text = f"Size: {real_width:.2f}m x {real_height:.2f}m"
+                        else:
+                            real_size_text = "Size: N/A"
 
-                    # 경계 상자와 텍스트 표시
-                    cv2.rectangle(result_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # 경계 상자
-                    cv2.putText(result_frame, label, (x1, y1 - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-                    cv2.putText(result_frame, depth_text, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
-                    cv2.putText(result_frame, real_size_text, (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+                        # 결과 텍스트 표시
+                        cv2.putText(result_frame, depth_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                        cv2.putText(result_frame, real_size_text, (x1, y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+
+                    else:
+                        # stone 외 객체는 Depth 정보만 표시
+                        cv2.putText(result_frame, f"{label}", (x1, y1 - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                        cv2.putText(result_frame, depth_text, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+
+                    # 경계 상자 그리기
+                    cv2.rectangle(result_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
             # OpenCV 창에 결과 표시
             cv2.imshow("YOLO + ZED", result_frame)
