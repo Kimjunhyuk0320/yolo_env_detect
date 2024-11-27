@@ -1,8 +1,7 @@
+import pyzed.sl as sl
 import cv2
 import numpy as np
-import pyzed.sl as sl
 from ultralytics import YOLO
-
 
 def get_valid_depth_in_bbox(depth_np, cx, cy, x1, x2, y1, y2, step=2, max_attempts=10):
     """
@@ -25,15 +24,16 @@ def get_valid_depth_in_bbox(depth_np, cx, cy, x1, x2, y1, y2, step=2, max_attemp
 
     return 0.0
 
-
 def calculate_box_dimensions(x1, x2, y1, y2, depth, fx, fy):
-    """Bounding Box의 실제 너비와 높이를 계산."""
+    """
+    Bounding Box의 실제 너비와 높이를 계산. 
+    초점 거리를 이용해서 실제 거리를 구함
+    """
     pixel_width = x2 - x1
     pixel_height = y2 - y1
     real_width = (pixel_width * depth) / fx
     real_height = (pixel_height * depth) / fy
     return real_width, real_height
-
 
 def process_detection_results(results, depth_np, fx, fy, annotated_frame, model_names):
     """
@@ -47,24 +47,29 @@ def process_detection_results(results, depth_np, fx, fy, annotated_frame, model_
 
         # 중심 픽셀의 깊이 값 가져오기
         depth_value = get_valid_depth_in_bbox(depth_np, cx, cy, x1, x2, y1, y2)
+        depth_text = f"Depth: {depth_value:.2f}m" if depth_value > 0 else "Depth: Invalid"
+
         if depth_value > 0:
-            real_width, real_height = calculate_box_dimensions(x1, x2, y1, y2, depth_value, fx, fy)
-            width_text = f"Width: {real_width:.2f}m"
-            height_text = f"Height: {real_height:.2f}m"
-            depth_text = f"Depth: {depth_value:.2f}m"
+            if class_name in ["rocks", "stone"]:
+                real_width, real_height = calculate_box_dimensions(x1, x2, y1, y2, depth_value, fx, fy)
+                width_text = f"Width: {real_width:.2f}m"
+                height_text = f"Height: {real_height:.2f}m"
+
+                # 거리, 가로, 세로 크기 텍스트 표시 (중심 좌표 기준)
+                cv2.putText(annotated_frame, depth_text, (cx - 50, cy - 20),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                cv2.putText(annotated_frame, width_text, (cx - 50, cy),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.putText(annotated_frame, height_text, (cx - 50, cy + 20),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            else:
+                # 거리만 표시 (중심 좌표 기준)
+                cv2.putText(annotated_frame, depth_text, (cx - 50, cy),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
         else:
-            width_text = f"Width: N/A"
-            height_text = f"Height: N/A"
-            depth_text = "Depth: Invalid"
-
-        # 텍스트 표시
-        cv2.putText(annotated_frame, width_text, (cx - 40, cy - 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
-        cv2.putText(annotated_frame, height_text, (cx - 40, cy),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
-        cv2.putText(annotated_frame, depth_text, (cx - 40, cy + 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
+            # 유효하지 않은 깊이일 경우
+            cv2.putText(annotated_frame, depth_text, (cx - 50, cy),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
 def initialize_zed_camera():
     """ZED 카메라 초기화 및 설정."""
@@ -81,7 +86,6 @@ def initialize_zed_camera():
     runtime_params = sl.RuntimeParameters()
     return zed, runtime_params
 
-
 def main():
     # ZED 카메라 초기화
     zed, runtime_params = initialize_zed_camera()
@@ -92,7 +96,7 @@ def main():
     fx, fy = calibration_params.left_cam.fx, calibration_params.left_cam.fy
 
     # YOLO 모델 로드
-    model = YOLO("yolov8s-seg.pt")
+    model = YOLO("customtrain.pt")
     print("Press 'q' to quit.")
 
     image = sl.Mat()
@@ -126,7 +130,6 @@ def main():
     # 리소스 정리
     zed.close()
     cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     main()
